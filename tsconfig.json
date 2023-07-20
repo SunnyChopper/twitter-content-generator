@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "ES2017",
     "lib": [
       "dom",
       "dom.iterable",
@@ -13,12 +13,19 @@
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
-    "module": "esnext",
+    "preserveConstEnums": true,
+    "noImplicitAny": true,
+    "sourceMap": true,
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "baseUrl": "./",
+    "paths": {
+      "/opt/services/*": ["src/nodejs/node_modules/services/*"],
+      "/contracts/*": ["src/contracts/*"],
+    }
   },
   "include": [
     "src"

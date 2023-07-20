@@ -3,19 +3,36 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@aws-amplify/ui-react": "^5.0.4",
+    "@emotion/react": "^11.11.1",
+    "@emotion/styled": "^11.11.0",
+    "@mui/icons-material": "^5.14.0",
+    "@mui/material": "^5.14.0",
+    "@reduxjs/toolkit": "^1.9.5",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
+    "@types/aws-lambda": "^8.10.119",
     "@types/jest": "^27.5.2",
     "@types/node": "^16.18.38",
     "@types/react": "^18.2.15",
     "@types/react-dom": "^18.2.7",
-    "aws-sdk": "^2.1415.0",
+    "aws-amplify": "^5.3.4",
+    "aws-sdk": "^2.1418.0",
+    "langchain": "^0.0.111",
     "react": "^18.2.0",
+    "react-dnd": "^16.0.1",
+    "react-dnd-html5-backend": "^16.0.1",
     "react-dom": "^18.2.0",
+    "react-dropzone": "^14.2.3",
+    "react-redux": "^8.1.1",
+    "react-router-dom": "^6.14.2",
     "react-scripts": "5.0.1",
+    "redux": "^4.2.1",
+    "serverless-esbuild": "^1.46.0",
     "typescript": "^4.9.5",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^2.1.4",
+    "zod": "^3.21.4"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -40,5 +57,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "serverless-dotenv-plugin": "^6.0.0"
   }
 }

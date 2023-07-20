@@ -1,0 +1,243 @@
+service: twitter-content-generator
+
+provider:
+  name: aws
+  region: us-east-1
+  runtime: nodejs18.x
+
+layers:
+  shared:
+    path: ./src/nodejs
+    name: twitter-content-gen-shared
+    description: Shared services layer for Twitter Content Generator
+    compatibleRuntimes:
+      - nodejs18.x
+    retain: false
+
+plugins:
+  - serverless-dotenv-plugin
+  - serverless-esbuild
+
+package:
+  exclude:
+    - node_modules/**
+    - .gitignore
+    - .git/**
+  
+functions:
+  getFiles:
+    handler: FileService.handler
+    events:
+      - http:
+          path: /api/files
+          method: get
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: ApiGatewayAuthorizer
+    layers:
+      - !Ref SharedLambdaLayer
+  uploadFile:
+    handler: FileService.handler
+    events:
+      - http:
+          path: /api/files
+          method: post
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: ApiGatewayAuthorizer
+    layers:
+      - !Ref SharedLambdaLayer
+  deleteFile:
+    handler: FileService.handler
+    events:
+      - http:
+          path: /api/files
+          method: delete
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: ApiGatewayAuthorizer
+    layers:
+      - !Ref SharedLambdaLayer
+  getInsights:
+    handler: InsightsService.handler
+    events:
+      - http:
+          path: /api/insights
+          method: get
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: ApiGatewayAuthorizer
+    layers:
+      - !Ref SharedLambdaLayer
+  getInsightsForFile:
+    handler: InsightsService.handler
+    events:
+      - http:
+          path: /api/insights/{fileId}
+          method: get
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: ApiGatewayAuthorizer
+    layers:
+      - !Ref SharedLambdaLayer
+  generateReplies:
+    handler: src/handlers/contentGenerationHandler.generateRepliesHandler
+    events:
+      - http:
+          path: /api/content/generate/replies
+          method: post
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: ApiGatewayAuthorizer
+    layers:
+      - !Ref SharedLambdaLayer
+  generateContent:
+    handler: ContentGenerationService.generateContent
+    events:
+      - http:
+          path: /api/content/generate
+          method: post
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: ApiGatewayAuthorizer
+    layers:
+      - !Ref SharedLambdaLayer
+  submitFeedback:
+    handler: FeedbackService.submitFeedback
+    events:
+      - http:
+          path: /api/feedback
+          method: post
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: ApiGatewayAuthorizer
+    layers:
+      - !Ref SharedLambdaLayer
+  createAvatar:
+    handler: AvatarService.createAvatar
+    events:
+      - http:
+          path: /api/avatars
+          method: post
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: ApiGatewayAuthorizer
+    layers:
+      - !Ref SharedLambdaLayer
+      
+resources:
+  Resources:
+    CognitoUserPool:
+      Type: AWS::Cognito::UserPool
+      Properties:
+        UserPoolName: twitter-content-gen-userpool
+        MfaConfiguration: OFF
+        UsernameAttributes:
+          - email
+        AutoVerifiedAttributes:
+          - email
+        Policies:
+          PasswordPolicy:
+            MinimumLength: 8
+            RequireUppercase: True
+            RequireLowercase: True
+            RequireNumbers: True
+            RequireSymbols: False
+    CognitoUserPoolClient:
+      Type: AWS::Cognito::UserPoolClient
+      Properties:
+        ClientName: twitter-content-gen-userpool-client
+        GenerateSecret: False
+        UserPoolId:
+          Ref: CognitoUserPool
+    FileBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: twitter-csv-files-bucket
+    UserDataTable:
+      Type: AWS::RDS::DBInstance
+      Properties:
+        DBName: twitter_content_gen
+        AllocatedStorage: 20
+        DBInstanceClass: db.t3.micro
+        Engine: MySQL
+        EngineVersion: "5.7"
+        MasterUsername: admin         # replace later
+        MasterUserPassword: admin123  # replace later
+        PubliclyAccessible: true
+        StorageType: gp2
+        MultiAZ: false
+    ApiGatewayAuthorizer:
+      Type: AWS::ApiGateway::Authorizer
+      Properties:
+        Name: twitter-content-gen-authorizer
+        IdentitySource: method.request.header.Authorization
+        RestApiId:
+          Ref: ApiGatewayRestApi
+        Type: COGNITO_USER_POOLS
+        ProviderARNs:
+          - Fn::GetAtt:
+              - CognitoUserPool
+              - Arn
+    # SharedLayer:
+    #   Type: AWS::Lambda::LayerVersion
+    #   Properties:
+    #     LayerName: twitter-content-gen-shared-layer-${sls:stage}
+    #     Description: Shared services layer for Twitter Content Generator
+    #     Content: ./src/nodejs
+    #     CompatibleRuntimes:
+    #       - nodejs18.x
+    #     RetentionPolicy: Retain
+
+outputs:
+  SHARED_LAYER_ARN:
+    Value:
+      Fn::GetAtt:
+        - SharedLambdaLayer
+        - Arn
+    Export:
+      Name: SHARED_LAYER_ARN
+  DB_HOST:
+    Value:
+      Fn::GetAtt:
+        - UserDataTable
+        - Endpoint.Address
+    Export:
+      Name: DB_HOST
+  DB_PORT:
+    Value:
+      Fn::GetAtt:
+        - UserDataTable
+        - Endpoint.Port
+    Export:
+      Name: DB_PORT
+  DB_NAME:
+    Value: twitter_content_gen
+    Export:
+      Name: DB_NAME
+  DB_USERNAME:
+    Value: admin
+    Export:
+      Name: DB_USERNAME
+  DB_PASSWORD:
+    Value: admin123
+    Export:
+      Name: DB_PASSWORD
+
+custom:
+  dotenv:
+    include:
+      - DB_HOST
+      - DB_PORT
+      - DB_NAME
+      - DB_USERNAME
+      - DB_PASSWORD
