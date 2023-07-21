@@ -112,6 +112,19 @@ functions:
 
   # --- Content Generation --- #
 
+  getGeneratedContent:
+    handler: src/handlers/ContentGenerationHandler.getGeneratedContentHandler
+    layers:
+      - !Ref SharedLambdaLayer
+    events:
+      - http:
+        path: /api/content/generate
+        method: get
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: ApiGatewayAuthorizer
+
   generateReplies:
     handler: src/handlers/ContentGenerationHandler.generateRepliesHandler
     layers:
@@ -165,6 +178,32 @@ functions:
             Ref: ApiGatewayAuthorizer
   
   # --- Feedback --- #
+
+  generateUserContentFeedback:
+    handler: src/handlers/FeedbackHandler.generateUserContentFeedbackHandler
+    layers:
+      - !Ref SharedLambdaLayer
+    events:
+      - http:
+        path: /api/feedback/content/generate
+        method: post
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: ApiGatewayAuthorizer
+
+  generateNewContentFromFeedback:
+    handler: src/handlers/FeedbackHandler.generateNewContentFromFeedbackHandler
+    layers:
+      - !Ref SharedLambdaLayer
+    events:
+      - http:
+        path: /api/feedback/content/regenerate
+        method: post
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: ApiGatewayAuthorizer
 
   getFeedback:
     handler: src/handlers/FeedbackHandler.getFeedbackHandler
@@ -227,7 +266,7 @@ functions:
     events:
       - http:
         path: /api/avatars
-        method: get
+        method: get 
         authorizer:
           type: COGNITO_USER_POOLS
           authorizerId:

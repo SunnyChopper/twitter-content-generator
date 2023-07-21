@@ -2,13 +2,17 @@
 import ContentGenerationService from "/opt/services/ContentGenerationService";
 
 // Contracts
-import { GenerateLongFormThreadsInput, GenerateLongFormThreadsOutput } from "/contracts/GenerateLongFormThreads";
-import { GenerateImageVideoIdeasInput, GenerateImageVideoIdeasOutput } from "/contracts/GenerateImageVideoIdeas";
-import { GenerateRepliesInput, GenerateRepliesOutput } from "/contracts/GenerateReplies";
-import { GenerateTweetsInput, GenerateTweetsOutput } from "/contracts/GenerateTweets";
+import { GenerateLongFormThreadsInput, GenerateLongFormThreadsOutput } from "/contracts/contentGeneration/GenerateLongFormThreads";
+import { GenerateImageVideoIdeasInput, GenerateImageVideoIdeasOutput } from "/contracts/contentGeneration/GenerateImageVideoIdeas";
+import { GenerateRepliesInput, GenerateRepliesOutput } from "/contracts/contentGeneration/GenerateReplies";
+import { GenerateTweetsInput, GenerateTweetsOutput } from "/contracts/contentGeneration/GenerateTweets";
 
 // AWS Lambda
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
+
+export const getGeneratedContentHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => { 
+    // TODO: Add app logic here to get the generated content.
+}
 
 export const generateRepliesHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     if (event.body === null || event.body === undefined) {
@@ -28,29 +32,15 @@ export const generateRepliesHandler = async (event: APIGatewayProxyEvent): Promi
         }
     }
 
-    if (request === null) {
-        return {
-            statusCode: 400,
-            body: JSON.stringify({ error: "Invalid request body." })
-        }
-    }
-
     let contentGenerationService: ContentGenerationService = new ContentGenerationService();
     let replies: GenerateRepliesOutput;
     try {
-        replies = await contentGenerationService.generateReplies(request);
+        replies = await contentGenerationService.generateReplies(request) as GenerateRepliesOutput;
     } catch (error) {
         console.log(error);
         return {
             statusCode: 500,
             body: JSON.stringify({ error: `Failed to generate replies. Error: ${error}` })
-        }
-    }
-
-    if (replies === null) {
-        return {
-            statusCode: 500,
-            body: JSON.stringify({ error: "Failed to generate replies." })
         }
     }
 
@@ -83,19 +73,12 @@ export const generateTweetsHandler = async (event: APIGatewayProxyEvent): Promis
     let contentGenerationService: ContentGenerationService = new ContentGenerationService();
     let tweets: GenerateTweetsOutput;
     try {
-        tweets = await contentGenerationService.generateTweets(request);
+        tweets = await contentGenerationService.generateTweets(request) as GenerateTweetsOutput;
     } catch (error) {
         console.log(error);
         return {
             statusCode: 500,
             body: JSON.stringify({ error: `Failed to generate tweets. Error: ${error}` })
-        }
-    }
-
-    if (tweets === null) {
-        return {
-            statusCode: 500,
-            body: JSON.stringify({ error: "Failed to generate tweets." })
         }
     }
 
@@ -128,19 +111,12 @@ export const generateLongFormThreadsHandler = async (event: APIGatewayProxyEvent
     let contentGenerationService: ContentGenerationService = new ContentGenerationService();
     let threads: GenerateLongFormThreadsOutput;
     try {
-        threads = await contentGenerationService.generateLongFormThreads(request);
+        threads = await contentGenerationService.generateLongFormThreads(request) as GenerateLongFormThreadsOutput;
     } catch (error) {
         console.log(error);
         return {
             statusCode: 500,
             body: JSON.stringify({ error: `Failed to generate long form threads. Error: ${error}` })
-        }
-    }
-
-    if (threads === null) {
-        return {
-            statusCode: 500,
-            body: JSON.stringify({ error: "Failed to generate long form threads." })
         }
     }
 
@@ -179,13 +155,6 @@ export const generateImageVideoIdeasHandler = async (event: APIGatewayProxyEvent
         return {
             statusCode: 500,
             body: JSON.stringify({ error: `Failed to generate image/video ideas. Error: ${error}` })
-        }
-    }
-
-    if (ideas === null) {
-        return {
-            statusCode: 500,
-            body: JSON.stringify({ error: "Failed to generate image/video ideas." })
         }
     }
 
