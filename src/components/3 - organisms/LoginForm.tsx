@@ -103,16 +103,7 @@ const LoginForm = (props: LoginProps) => {
         }
     }
 
-    const handleLogout = async () => {
-        try {
-            await Auth.signOut();
-            localStorage.removeItem('jwt');
-            setValidToken(false);
-        } catch (error: any) {
-            setError(error.message);
-            setIsError(true);
-        }
-    }
+    
 
     return (
         <Grid container spacing={4} alignItems="center" justifyContent="center">
@@ -146,7 +137,7 @@ const LoginForm = (props: LoginProps) => {
                 <Button variant="contained" fullWidth sx={styles.loginButton} onClick={(e) => { handleSubmit(e) }}>Login</Button>
                 <Link to="/signup" style={styles.signupLink}>Sign Up</Link>
                 <Link to="/forgot-password" style={styles.forgotPasswordLink}>Forgot Password</Link>
-                {error && <Typography variant="body1" color="error">{error}</Typography>}
+                {isError && <Typography variant="body1" color="error">{error}</Typography>}
             </Grid>
         </Grid>
     );
