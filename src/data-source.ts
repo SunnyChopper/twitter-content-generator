@@ -1,0 +1,31 @@
+import "reflect-metadata";
+import { DataSource } from "typeorm";
+
+// TODO: Update the entities array with your own entities
+import { User } from "./entity/User";
+
+// Get environment variables for database connection
+// Load from .env file if running locally
+// if (process.env.NODE_ENV !== "production") {
+//     require("dotenv").config();
+// }
+
+const DB_PORT = parseInt(process.env.REACT_APP_DB_PORT || "3306");
+const DB_HOST = process.env.REACT_APP_DB_HOST || "localhost";
+const DB_NAME = process.env.REACT_APP_DB_NAME || "test";
+const DB_USERNAME = process.env.REACT_APP_DB_USERNAME || "test";
+const DB_PASSWORD = process.env.REACT_APP_DB_PASSWORD || "test";
+
+export const AppDataSource = new DataSource({
+    host: DB_HOST,
+    port: DB_PORT,
+    username: DB_USERNAME,
+    password: DB_PASSWORD,
+    database: DB_NAME,
+    type: "mysql",
+    synchronize: true,
+    logging: true,
+    entities: [User],
+    migrations: [],
+    subscribers: [],
+});

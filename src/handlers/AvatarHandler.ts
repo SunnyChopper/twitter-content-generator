@@ -10,6 +10,10 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 
 export const getAvatarsHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     // TODO: Add app logic here to retrieve the avatars from the database
+    return {
+        statusCode: 200,
+        body: JSON.stringify({ message: "Please implement getAvatarsHandler" })
+    }
 }
 
 export const createAvatarHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
@@ -89,5 +93,8 @@ export const updateAvatarHandler = async (event: APIGatewayProxyEvent): Promise<
 }
 
 export const deleteAvatarHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-    // TODO: Add app logic here to delete the avatar from the database
+    return {
+        statusCode: 200,
+        body: JSON.stringify({ message: "Please implement deleteAvatarHandler" })
+    }
 }

@@ -72,16 +72,16 @@ const LoginForm = (props: LoginProps) => {
     const [password, setPassword] = React.useState<string>('');
     const [error, setError] = React.useState<string>('');
     const [isError, setIsError] = React.useState<boolean>(false);
-    const [redirectUser, setRedirectUser] = React.useState<boolean>(false);
-    const [validToken, setValidToken] = React.useState<boolean>(false);
 
     const navigate = useNavigate();
 
     React.useEffect(() => { 
         const checkToken = async () => { 
             try {
-                await Auth.currentSession();
-                setValidToken(true);
+                let userSession = await Auth.currentSession();
+                if (userSession.isValid()) {
+                    navigate('/dashboard');
+                }
             } catch (error: any) {
                 setError(error.message);
                 setIsError(true);
@@ -96,7 +96,7 @@ const LoginForm = (props: LoginProps) => {
         try {
             const user = await Auth.signIn(email, password);
             localStorage.setItem('jwt', user.signInUserSession.accessToken.jwtToken);
-            setRedirectUser(true);
+            navigate('/dashboard');
         } catch (error: any) {
             setError(error.message);
             setIsError(true);
@@ -112,10 +112,6 @@ const LoginForm = (props: LoginProps) => {
             setError(error.message);
             setIsError(true);
         }
-    }
-
-    if (redirectUser || validToken) {
-        navigate('/dashboard');
     }
 
     return (

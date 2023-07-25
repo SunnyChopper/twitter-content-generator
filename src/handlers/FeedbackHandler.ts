@@ -86,16 +86,32 @@ export const generateNewContentFromFeedbackHandler = async (event: APIGatewayPro
 
 export const getFeedbackHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => { 
     // TODO: Add app logic here to get a piece of feedback submitted by the user.
+    return {
+        statusCode: 200,
+        body: JSON.stringify({ message: "Please implement getFeedbackHandler" })
+    }
 }
 
 export const submitFeedbackHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     // TODO: Add app logic here to save a piece of feedback submitted by the user.
+    return {
+        statusCode: 200,
+        body: JSON.stringify({ message: "Please implement submitFeedbackHandler" })
+    }
 }
 
 export const updateFeedbackHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     // TODO: Add app logic here to update a piece of feedback submitted by the user.
+    return {
+        statusCode: 200,
+        body: JSON.stringify({ message: "Please implement updateFeedbackHandler" })
+    }
 }
 
 export const deleteFeedbackHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     // TODO: Add app logic here to delete a piece of feedback submitted by the user.
+    return {
+        statusCode: 200,
+        body: JSON.stringify({ message: "Please implement deleteFeedbackHandler" })
+    }
 }

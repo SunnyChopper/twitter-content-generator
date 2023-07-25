@@ -6,6 +6,16 @@ provider:
   runtime: nodejs18.x
   environment:
     OPENAI_API_KEY: ${env:OPENAI_API_KEY}
+    DB_HOST:
+      'Fn::ImportValue': DB_HOST
+    DB_PORT:
+      'Fn::ImportValue': DB_PORT
+    DB_NAME:
+      'Fn::ImportValue': DB_NAME
+    DB_USERNAME:
+      'Fn::ImportValue': DB_USERNAME
+    DB_PASSWORD:
+      'Fn::ImportValue': DB_PASSWORD
 
 layers:
   shared:
@@ -15,9 +25,6 @@ layers:
     compatibleRuntimes:
       - nodejs18.x
     retain: false
-    package:
-      include:
-        - src/nodejs
 
 plugins:
   - serverless-dotenv-plugin
@@ -36,12 +43,12 @@ functions:
       - !Ref SharedLambdaLayer
     events:
       - http:
-        path: /api/files
-        method: get
-        authorizer:
-          type: COGNITO_USER_POOLS
-          authorizerId:
-            Ref: ApiGatewayAuthorizer
+          path: /api/files
+          method: get
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: ApiGatewayAuthorizer
 
   uploadFile:
     handler: src/handlers/FileHandler.uploadFileHandler
@@ -49,12 +56,12 @@ functions:
       - !Ref SharedLambdaLayer
     events:
       - http:
-        path: /api/files
-        method: post
-        authorizer:
-          type: COGNITO_USER_POOLS
-          authorizerId:
-            Ref: ApiGatewayAuthorizer
+          path: /api/files
+          method: post
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: ApiGatewayAuthorizer
 
   deleteFile:
     handler: src/handlers/FileHandler.deleteFileHandler
@@ -62,12 +69,12 @@ functions:
       - !Ref SharedLambdaLayer
     events:
       - http:
-        path: /api/files
-        method: delete
-        authorizer:
-          type: COGNITO_USER_POOLS
-          authorizerId:
-            Ref: ApiGatewayAuthorizer
+          path: /api/files
+          method: delete
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: ApiGatewayAuthorizer
 
   # --- Insights --- #
 
@@ -75,12 +82,12 @@ functions:
     handler: src/handlers/InsightsHandler.getInsightsHandler
     events:
       - http:
-        path: /api/insights
-        method: get
-        authorizer:
-          type: COGNITO_USER_POOLS
-          authorizerId:
-            Ref: ApiGatewayAuthorizer
+          path: /api/insights
+          method: get
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: ApiGatewayAuthorizer
     layers:
       - !Ref SharedLambdaLayer
 
@@ -88,12 +95,12 @@ functions:
     handler: src/handlers/InsightsHandler.getDashboardInsightsHandler
     events:
       - http:
-        path: /api/insights/dashboard
-        method: get
-        authorizer:
-          type: COGNITO_USER_POOLS
-          authorizerId:
-            Ref: ApiGatewayAuthorizer
+          path: /api/insights/dashboard
+          method: get
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: ApiGatewayAuthorizer
     layers:
       - !Ref SharedLambdaLayer
   
@@ -103,12 +110,12 @@ functions:
       - !Ref SharedLambdaLayer
     events:
       - http:
-        path: /api/insights/{fileId}
-        method: get
-        authorizer:
-          type: COGNITO_USER_POOLS
-          authorizerId:
-            Ref: ApiGatewayAuthorizer
+          path: /api/insights/{fileId}
+          method: get
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: ApiGatewayAuthorizer
 
   # --- Content Generation --- #
 
@@ -118,12 +125,12 @@ functions:
       - !Ref SharedLambdaLayer
     events:
       - http:
-        path: /api/content/generate
-        method: get
-        authorizer:
-          type: COGNITO_USER_POOLS
-          authorizerId:
-            Ref: ApiGatewayAuthorizer
+          path: /api/content/generate
+          method: get
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: ApiGatewayAuthorizer
 
   generateReplies:
     handler: src/handlers/ContentGenerationHandler.generateRepliesHandler
@@ -131,12 +138,12 @@ functions:
       - !Ref SharedLambdaLayer
     events:
       - http:
-        path: /api/content/generate/replies
-        method: post
-        authorizer:
-          type: COGNITO_USER_POOLS
-          authorizerId:
-            Ref: ApiGatewayAuthorizer
+          path: /api/content/generate/replies
+          method: post
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: ApiGatewayAuthorizer
     
   generateTweets:
     handler: src/handlers/ContentGenerationHandler.generateTweetsHandler
@@ -144,12 +151,12 @@ functions:
       - !Ref SharedLambdaLayer
     events:
       - http:
-        path: /api/content/generate/tweets
-        method: post
-        authorizer:
-          type: COGNITO_USER_POOLS
-          authorizerId:
-            Ref: ApiGatewayAuthorizer
+          path: /api/content/generate/tweets
+          method: post
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: ApiGatewayAuthorizer
 
   generateLongFormThreads:
     handler: src/handlers/ContentGenerationHandler.generateLongFormThreadsHandler
@@ -157,12 +164,12 @@ functions:
       - !Ref SharedLambdaLayer
     events:
       - http:
-        path: /api/content/generate/threads
-        method: post
-        authorizer:
-          type: COGNITO_USER_POOLS
-          authorizerId:
-            Ref: ApiGatewayAuthorizer
+          path: /api/content/generate/threads
+          method: post
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: ApiGatewayAuthorizer
 
   generateImageVideoIdeas:
     handler: src/handlers/ContentGenerationHandler.generateImageVideoIdeasHandler
@@ -170,12 +177,12 @@ functions:
       - !Ref SharedLambdaLayer
     events:
       - http:
-        path: /api/content/generate/image-video
-        method: post
-        authorizer:
-          type: COGNITO_USER_POOLS
-          authorizerId:
-            Ref: ApiGatewayAuthorizer
+          path: /api/content/generate/image-video
+          method: post
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: ApiGatewayAuthorizer
   
   # --- Feedback --- #
 
@@ -185,12 +192,12 @@ functions:
       - !Ref SharedLambdaLayer
     events:
       - http:
-        path: /api/feedback/content/generate
-        method: post
-        authorizer:
-          type: COGNITO_USER_POOLS
-          authorizerId:
-            Ref: ApiGatewayAuthorizer
+          path: /api/feedback/content/generate
+          method: post
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: ApiGatewayAuthorizer
 
   generateNewContentFromFeedback:
     handler: src/handlers/FeedbackHandler.generateNewContentFromFeedbackHandler
@@ -198,12 +205,12 @@ functions:
       - !Ref SharedLambdaLayer
     events:
       - http:
-        path: /api/feedback/content/regenerate
-        method: post
-        authorizer:
-          type: COGNITO_USER_POOLS
-          authorizerId:
-            Ref: ApiGatewayAuthorizer
+          path: /api/feedback/content/regenerate
+          method: post
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: ApiGatewayAuthorizer
 
   getFeedback:
     handler: src/handlers/FeedbackHandler.getFeedbackHandler
@@ -211,12 +218,12 @@ functions:
       - !Ref SharedLambdaLayer
     events:
       - http:
-        path: /api/feedback
-        method: get
-        authorizer:
-          type: COGNITO_USER_POOLS
-          authorizerId:
-            Ref: ApiGatewayAuthorizer
+          path: /api/feedback
+          method: get
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: ApiGatewayAuthorizer
 
   submitFeedback:
     handler: src/handlers/FeedbackHandler.submitFeedbackHandler
@@ -224,12 +231,12 @@ functions:
       - !Ref SharedLambdaLayer
     events:
       - http:
-        path: /api/feedback
-        method: post
-        authorizer:
-          type: COGNITO_USER_POOLS
-          authorizerId:
-            Ref: ApiGatewayAuthorizer
+          path: /api/feedback
+          method: post
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: ApiGatewayAuthorizer
 
   updateFeedback:
     handler: src/handlers/FeedbackHandler.updateFeedbackHandler
@@ -237,12 +244,12 @@ functions:
       - !Ref SharedLambdaLayer
     events:
       - http:
-        path: /api/feedback
-        method: patch
-        authorizer:
-          type: COGNITO_USER_POOLS
-          authorizerId:
-            Ref: ApiGatewayAuthorizer
+          path: /api/feedback
+          method: patch
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: ApiGatewayAuthorizer
 
   deleteFeedback:
     handler: src/handlers/FeedbackHandler.deleteFeedbackHandler
@@ -250,12 +257,12 @@ functions:
       - !Ref SharedLambdaLayer
     events:
       - http:
-        path: /api/feedback
-        method: delete
-        authorizer:
-          type: COGNITO_USER_POOLS
-          authorizerId:
-            Ref: ApiGatewayAuthorizer
+          path: /api/feedback
+          method: delete
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: ApiGatewayAuthorizer
 
   # --- Avatars --- #
 
@@ -265,12 +272,12 @@ functions:
       - !Ref SharedLambdaLayer
     events:
       - http:
-        path: /api/avatars
-        method: get 
-        authorizer:
-          type: COGNITO_USER_POOLS
-          authorizerId:
-            Ref: ApiGatewayAuthorizer
+          path: /api/avatars
+          method: get 
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: ApiGatewayAuthorizer
 
   createAvatar:
     handler: src/handlers/AvatarHandler.createAvatarHandler
@@ -278,12 +285,12 @@ functions:
       - !Ref SharedLambdaLayer
     events:
       - http:
-        path: /api/avatars
-        method: post
-        authorizer:
-          type: COGNITO_USER_POOLS
-          authorizerId:
-            Ref: ApiGatewayAuthorizer
+          path: /api/avatars
+          method: post
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: ApiGatewayAuthorizer
 
   updateAvatar:
     handler: src/handlers/AvatarHandler.updateAvatarHandler
@@ -291,12 +298,12 @@ functions:
       - !Ref SharedLambdaLayer
     events:
       - http:
-        path: /api/avatars
-        method: patch
-        authorizer:
-          type: COGNITO_USER_POOLS
-          authorizerId:
-            Ref: ApiGatewayAuthorizer
+          path: /api/avatars
+          method: patch
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: ApiGatewayAuthorizer
 
   deleteAvatar:
     handler: src/handlers/AvatarHandler.deleteAvatarHandler
@@ -304,12 +311,12 @@ functions:
       - !Ref SharedLambdaLayer
     events:
       - http:
-        path: /api/avatars
-        method: delete
-        authorizer:
-          type: COGNITO_USER_POOLS
-          authorizerId:
-            Ref: ApiGatewayAuthorizer
+          path: /api/avatars
+          method: delete
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: ApiGatewayAuthorizer
       
 resources:
   Resources:
@@ -365,15 +372,6 @@ resources:
           - Fn::GetAtt:
               - CognitoUserPool
               - Arn
-    # SharedLayer:
-    #   Type: AWS::Lambda::LayerVersion
-    #   Properties:
-    #     LayerName: twitter-content-gen-shared-layer-${sls:stage}
-    #     Description: Shared services layer for Twitter Content Generator
-    #     Content: ./src/nodejs
-    #     CompatibleRuntimes:
-    #       - nodejs18.x
-    #     RetentionPolicy: Retain
 
 outputs:
   SHARED_LAYER_ARN:
