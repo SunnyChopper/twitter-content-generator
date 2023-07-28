@@ -17,6 +17,7 @@ const DB_USERNAME = process.env.REACT_APP_DB_USERNAME || "test";
 const DB_PASSWORD = process.env.REACT_APP_DB_PASSWORD || "test";
 
 export const AppDataSource = new DataSource({
+    type: "mysql",
     host: DB_HOST,
     port: DB_PORT,
     username: DB_USERNAME,

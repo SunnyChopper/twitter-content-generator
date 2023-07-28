@@ -22,6 +22,7 @@ export const saveFileKeyForCurrentUser = async (file: File, key: string): Promis
         'Authorization': `Bearer ${(await Auth.currentSession()).getIdToken().getJwtToken()}`
     };
     
+    const apiPath = `${process.env.REACT_APP_API_BASE_URL}/files`;
     const response = await fetch(apiPath, {
         method: 'POST',
         headers: headers,
@@ -46,6 +47,7 @@ export const getFilesForCurrentUser = async (): Promise<object> => {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${(await Auth.currentSession()).getIdToken().getJwtToken()}`
     };
+
     const apiPath = `${process.env.REACT_APP_API_BASE_URL}/files`;
     const response = await fetch(apiPath, {
         method: 'GET',

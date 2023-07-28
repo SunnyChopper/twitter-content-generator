@@ -55,6 +55,7 @@ const FileUploadModal: React.FC<FileUploadModalProps> = (props) => {
             return;
         }
         
+        try {
             let fileKey = await uploadFileForCurrentUser(fileToUpload);
             await saveFileKeyForCurrentUser(fileToUpload, fileKey);
         } catch (error) {
