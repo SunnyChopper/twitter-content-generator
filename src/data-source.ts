@@ -2,7 +2,7 @@ import "reflect-metadata";
 import { DataSource } from "typeorm";
 
 // TODO: Update the entities array with your own entities
-import { User } from "./entity/User";
+import { TwitterFile } from "src/entity/TwitterFile";
 
 // Get environment variables for database connection
 // Load from .env file if running locally
@@ -22,10 +22,9 @@ export const AppDataSource = new DataSource({
     username: DB_USERNAME,
     password: DB_PASSWORD,
     database: DB_NAME,
-    type: "mysql",
-    synchronize: true,
+    synchronize: false,
     logging: true,
-    entities: [User],
+    entities: [TwitterFile],
     migrations: [],
     subscribers: [],
 });

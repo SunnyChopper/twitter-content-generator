@@ -20,11 +20,13 @@
       "aws-sdk": "^2.1418.0",
       "langchain": "^0.0.111",
       "mysql": "^2.18.1",
+      "pg": "^8.4.0",
       "react": "^18.2.0",
       "react-dnd": "^16.0.1",
       "react-dnd-html5-backend": "^16.0.1",
       "react-dom": "^18.2.0",
       "react-dropzone": "^14.2.3",
+      "react-native-sqlite-storage": "file:./shims/react-native-sqlite-storage",
       "react-redux": "^8.1.1",
       "react-router-dom": "^6.14.2",
       "react-scripts": "5.0.1",
@@ -34,17 +36,16 @@
       "typeorm": "0.3.17",
       "typescript": "^4.9.5",
       "web-vitals": "^2.1.4",
-      "zod": "^3.21.4",
-      "pg": "^8.4.0",
-      "react-native-sqlite-storage": "file:./shims/react-native-sqlite-storage"
+      "zod": "^3.21.4"
    },
    "scripts": {
-      "start": "ts-node src/index.ts",
+      "start": "ts-node -r tsconfig-paths/register src/orm/index.ts",
       "serve": "react-scripts start",
       "build": "react-scripts build",
       "test": "react-scripts test",
       "eject": "react-scripts eject",
-      "typeorm": "typeorm-ts-node-commonjs"
+      "typeorm": "typeorm-ts-node-commonjs",
+      "typeorm:cli": "ts-node ./node_modules/typeorm/cli --dataSource ./src/data-source.ts"
    },
    "eslintConfig": {
       "extends": [
@@ -64,15 +65,11 @@
          "last 1 safari version"
       ]
    },
-   "browser": {
-      "fs": false,
-      "path": false,
-      "os": false
-   },
    "devDependencies": {
       "@types/node": "^16.11.10",
       "serverless-dotenv-plugin": "^6.0.0",
       "ts-node": "10.7.0",
+      "tsconfig-paths": "^4.2.0",
       "typescript": "4.5.2"
    }
 }
