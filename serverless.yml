@@ -63,8 +63,8 @@ functions:
               - email
               - sub
 
-  uploadFile:
-    handler: src/handlers/FileHandler.uploadFileHandler
+  createFile:
+    handler: src/handlers/FileHandler.createFileHandler
     layers:
       - !Ref SharedLambdaLayer
     events:

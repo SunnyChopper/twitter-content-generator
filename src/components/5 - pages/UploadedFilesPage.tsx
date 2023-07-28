@@ -5,9 +5,22 @@ import Grid from '@mui/material/Grid';
 import Header from '../4 - templates/Header';
 import UploadedFilesTable from '../3 - organisms/UploadedFilesTable';
 
+import { getFilesForCurrentUser } from 'src/utils/files';
+
 interface UploadedFilesPageProps { }
 
 const UploadedFilesPage: React.FC<UploadedFilesPageProps> = (props) => {
+    const [isLoading, setIsLoading] = React.useState(false);
+    React.useEffect(() => {
+        // Send an API request
+        if (isLoading) {
+            return;
+        }
+
+        getFilesForCurrentUser();
+        setIsLoading(true);
+    }, [isLoading]);
+
     return (
         <Grid container spacing={2}>
             <Grid item xs={12}>

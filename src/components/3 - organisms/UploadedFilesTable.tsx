@@ -1,24 +1,29 @@
 // System
+import moment from 'moment';
 import React from 'react';
 
 // Material UI
-import Table from '@mui/material/Table';
+import CircularProgress from '@mui/material/CircularProgress';
+import TableContainer from '@mui/material/TableContainer';
+import Typography from '@mui/material/Typography';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Divider from '@mui/material/Divider';
-import Typography from '@mui/material/Typography';
-import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
+import Table from '@mui/material/Table';
 import Modal from '@mui/material/Modal';
+import Grid from '@mui/material/Grid';
 
 // Components
 import FileUpload from './FileUpload';
 
+// Entities
+import { TwitterFile } from 'src/entity/TwitterFile';
+
 // Helpers
-import { uploadFileForCurrentUser, saveFileKeyForCurrentUser } from 'src/utils/files';
+import { uploadFileForCurrentUser, createFileForCurrentUser, getFilesForCurrentUser, deleteFileForCurrentUser } from 'src/utils/files';
 
 interface UploadedFilesTableProps {
     actionType: 'CRUD' | 'LLM' | 'Display';
@@ -42,6 +47,7 @@ const styles: { [key: string]: React.CSSProperties } = {
 }
 
 interface FileUploadModalProps {
+    handlePostUpload: () => void;
     handleCancel: () => void;
     open: boolean;
 }
@@ -54,12 +60,18 @@ const FileUploadModal: React.FC<FileUploadModalProps> = (props) => {
         if (!fileToUpload) {
             return;
         }
+
+        setUploadButtonEnabled(false);
         
         try {
             let fileKey = await uploadFileForCurrentUser(fileToUpload);
-            await saveFileKeyForCurrentUser(fileToUpload, fileKey);
+            await createFileForCurrentUser(fileToUpload, fileKey);
+            props.handlePostUpload();
+            setFileToUpload(null);
         } catch (error) {
             console.error('Error uploading file: ', error);
+        } finally {
+            setUploadButtonEnabled(true);
         }
     }
 
@@ -81,23 +93,147 @@ const FileUploadModal: React.FC<FileUploadModalProps> = (props) => {
     );
 }
 
+interface FileDeleteModalProps {
+    file: TwitterFile | null;
+    handlePostDelete: () => void;
+    handleCancel: () => void;
+    open: boolean;
+}
+
+const FileDeleteModal: React.FC<FileDeleteModalProps> = (props) => {
+    const [isLoading, setIsLoading] = React.useState<boolean>(false);
+    const [error, setError] = React.useState<string | null>(null);
+
+    const handleDelete = () => {
+        setError(null);
+        if (!props.file) {
+            setError('System Error: No file set to delete.');
+            return;
+        }
+
+        setIsLoading(true);
+        deleteFileForCurrentUser(props.file.id.toString()).then(() => {
+            props.handlePostDelete();
+        }).catch((error) => {
+            console.error('Error deleting file: ', error);
+            setError('Error deleting file.');
+        }).finally(() => {
+            setIsLoading(false);
+        });
+    }
+
+    return (
+        <Modal open={props.open} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Grid container spacing={2} sx={{ width: '500px', height: 'auto', backgroundColor: 'white', padding: '20px' }}>
+                <Grid item xs={12}>
+                    <Typography variant="h5">Are you sure you want to delete this file?</Typography>
+                    {error && <Typography variant="body1" color="error">{error}</Typography>}
+                </Grid>
+                <Grid item xs={12}>
+                    <Button variant="contained" color="error" size="small" disabled={isLoading} onClick={handleDelete}>Delete</Button>
+                    <Button variant="text" color="primary" size="small" disabled={isLoading} onClick={props.handleCancel}>Cancel</Button>
+                </Grid>
+            </Grid>
+        </Modal>
+    );
+}
+
 const UploadedFilesTable: React.FC<UploadedFilesTableProps> = (props) => {
+    const [fileToDelete, setFileToDelete] = React.useState<TwitterFile | null>(null);
+    const [deleteModalOpen, setDeleteModalOpen] = React.useState<boolean>(false);
+    const [isLoading, setIsLoading] = React.useState<boolean>(false);
+    const [files, setFiles] = React.useState<TwitterFile[]>([]);
     const [open, setOpen] = React.useState(false);
+
+    React.useEffect(() => {
+        fetchFiles();
+    }, []);
 
     React.useEffect(() => { 
         console.log(open);
     }, [open]);
 
+    const fetchFiles = () => {
+        setIsLoading(true);
+        getFilesForCurrentUser().then((files: TwitterFile[]) => {
+            setFiles(files);
+        }).catch((error) => {
+            console.error('Error getting files for current user: ', error);
+        }).finally(() => {
+            setIsLoading(false);
+        });
+    }
+
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
+    const handleCancelDeleteFile = () => setDeleteModalOpen(false);
+    
+    const handlePostDeleteFile = async () => {
+        setDeleteModalOpen(false);
+        setFileToDelete(null);
+        await fetchFiles();
+    }
+
+    const handlePostUploadFile = async () => { 
+        setOpen(false);
+        await fetchFiles();
+    }
+
+    const handleOnClickDelete = (id: string) => {
+        // Find the file with the given id
+        let fileToDelete = files.find((file: TwitterFile) => file.id === parseInt(id));
+        if (!fileToDelete) {
+            console.error('Could not find file with id: ', id);
+            return;
+        }
+
+        setFileToDelete(fileToDelete);
+        setDeleteModalOpen(true);
+    }
 
     const renderActionButton = (id: string) => {
         if (props.actionType === 'CRUD') {
-            return <Button variant="contained" color="primary" size="small" disabled={props.disableButtons}>Edit</Button>;
+            return (
+                <>
+                    <Button variant="contained" color="error" size="small" disabled={props.disableButtons} onClick={() => {handleOnClickDelete(id);}}>Delete</Button>
+                </>
+            );
         } else if (props.actionType === 'LLM') {
             return <Button variant="contained" color="primary" size="small" disabled={props.disableButtons} onClick={() => { props.handleClickGenerate(id) }}>Select File</Button>;
         } else {
             return <Button variant="contained" color="primary" size="small" disabled={props.disableButtons}>Create Avatar</Button>;
+        }
+    }
+
+    const renderLoading = () => {
+        return (
+            <TableRow sx={{ padding: '48px' }}>
+                <TableCell colSpan={4} align="center">
+                    <CircularProgress />
+                </TableCell>
+            </TableRow>
+        );
+    }
+
+    const renderFiles = () => {
+        if (files.length === 0) {
+            return (
+                <TableRow sx={{ padding: '48px' }}>
+                    <TableCell colSpan={4} align="center">No files uploaded.</TableCell>
+                </TableRow>
+            );
+        } else {
+            return files.map((file: TwitterFile) => {
+                return (
+                    <TableRow key={file.id}>
+                        <TableCell>{file.fileName}</TableCell>
+                        <TableCell>{moment(file.createdAt).format('MMM Do, YYYY')}</TableCell>
+                        <TableCell>
+                            {renderActionButton(file.id.toString())}
+                        </TableCell>
+                    </TableRow>
+                );
+            });
         }
     }
 
@@ -114,24 +250,17 @@ const UploadedFilesTable: React.FC<UploadedFilesTableProps> = (props) => {
                         <TableHead>
                             <TableRow>
                                 <TableCell>File Name</TableCell>
-                                <TableCell># of Content Found</TableCell>
                                 <TableCell>Uploaded At</TableCell>
                                 <TableCell></TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            <TableRow>
-                                <TableCell>twitter_analytics_f9r43f0r3f_2021-10-10.csv</TableCell>
-                                <TableCell>420</TableCell>
-                                <TableCell>{new Date().toLocaleDateString()}</TableCell>
-                                <TableCell>
-                                    {renderActionButton('1')}
-                                </TableCell>
-                            </TableRow>
+                            {isLoading ? renderLoading() : renderFiles()}
                         </TableBody>
                     </Table>
                 </TableContainer>
-                <FileUploadModal open={open} handleCancel={handleClose} />
+                <FileUploadModal open={open} handleCancel={handleClose} handlePostUpload={handlePostUploadFile} />
+                <FileDeleteModal open={deleteModalOpen} file={fileToDelete} handleCancel={handleCancelDeleteFile} handlePostDelete={handlePostDeleteFile} />
             </Grid>
         </Grid>
     );
