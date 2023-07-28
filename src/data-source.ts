@@ -2,7 +2,7 @@ import "reflect-metadata";
 import { DataSource } from "typeorm";
 
 // TODO: Update the entities array with your own entities
-import { User } from "./entity/User";
+import { TwitterFile } from "src/entity/TwitterFile";
 
 // Get environment variables for database connection
 // Load from .env file if running locally
@@ -17,15 +17,15 @@ const DB_USERNAME = process.env.REACT_APP_DB_USERNAME || "test";
 const DB_PASSWORD = process.env.REACT_APP_DB_PASSWORD || "test";
 
 export const AppDataSource = new DataSource({
+    type: "mysql",
     host: DB_HOST,
     port: DB_PORT,
     username: DB_USERNAME,
     password: DB_PASSWORD,
     database: DB_NAME,
-    type: "mysql",
-    synchronize: true,
+    synchronize: false,
     logging: true,
-    entities: [User],
+    entities: [TwitterFile],
     migrations: [],
     subscribers: [],
 });

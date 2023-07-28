@@ -1,5 +1,7 @@
+// System
 import React from 'react';
 
+// Material UI
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -12,7 +14,11 @@ import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
 import Modal from '@mui/material/Modal';
 
+// Components
 import FileUpload from './FileUpload';
+
+// Helpers
+import { uploadFileForCurrentUser, saveFileKeyForCurrentUser } from 'src/utils/files';
 
 interface UploadedFilesTableProps {
     actionType: 'CRUD' | 'LLM' | 'Display';
@@ -41,8 +47,21 @@ interface FileUploadModalProps {
 }
 
 const FileUploadModal: React.FC<FileUploadModalProps> = (props) => {
-    const [fileUrl, setFileUrl] = React.useState('');
+    const [fileToUpload, setFileToUpload] = React.useState<File | null>(null);
     const [uploadButtonEnabled, setUploadButtonEnabled] = React.useState(false);
+
+    const onUpload = async () => { 
+        if (!fileToUpload) {
+            return;
+        }
+        
+        try {
+            let fileKey = await uploadFileForCurrentUser(fileToUpload);
+            await saveFileKeyForCurrentUser(fileToUpload, fileKey);
+        } catch (error) {
+            console.error('Error uploading file: ', error);
+        }
+    }
 
     return (
         <Modal open={props.open} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -51,10 +70,10 @@ const FileUploadModal: React.FC<FileUploadModalProps> = (props) => {
                     <Typography variant="h5">Upload CSV</Typography>
                 </Grid>
                 <Grid item xs={12}>
-                    <FileUpload setFileUrl={setFileUrl} setUploadEnabled={setUploadButtonEnabled} />
+                    <FileUpload setFileToUpload={setFileToUpload} setUploadEnabled={setUploadButtonEnabled} />
                 </Grid>
                 <Grid item xs={12}>
-                    <Button variant="contained" color="primary" size="small" disabled={!uploadButtonEnabled}>Upload</Button>
+                    <Button variant="contained" color="primary" size="small" onClick={onUpload} disabled={!uploadButtonEnabled}>Upload</Button>
                     <Button variant="text" color="primary" size="small" onClick={props.handleCancel}>Cancel</Button>
                 </Grid>
             </Grid>

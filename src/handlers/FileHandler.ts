@@ -1,29 +1,64 @@
 // Services
 import FileService from "/opt/services/FileService";
 
-// Contracts
+// Entities
+import { TwitterFile } from "src/entity/TwitterFile";
 
+// Utils
+import { getCurrentUserId } from 'src/utils/cognitoUsers';
+import { buildResponse } from 'src/utils/responses';
 
 // AWS Lambda
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 
 export const getFilesHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-    return {
-        statusCode: 200,
-        body: JSON.stringify({ message: "Please implement getFilesHandler" })
+    const userId = getCurrentUserId(event);
+    if (userId === undefined) {
+        return buildResponse(event, 400, { error: "Invalid request body. Cannot retrieve an authorized user." });
+    }
+
+    let fileService = new FileService();
+    try {
+        let files: TwitterFile[] = await fileService.getFiles(userId);
+        return buildResponse(event, 200, files);
+    } catch (error) {
+        console.error(error);
+        return buildResponse(event, 500, { error: `Failed to retrieve files. Error: ${error}` });
     }
 }
 
 export const uploadFileHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-    return {
-        statusCode: 200,
-        body: JSON.stringify({ message: "Please implement uploadFileHandler" })
+    if (event.body === null || event.body === undefined) {
+        return buildResponse(event, 400, { error: "Invalid request body. Cannot upload file." });
+    }
+
+    const fileService = new FileService();
+    try {
+        let uploadedFileId: number = await fileService.saveFile(JSON.parse(event.body) as TwitterFile);
+        return buildResponse(event, 200, { id: uploadedFileId });
+    } catch (error) {
+        console.error(error);
+        return buildResponse(event, 500, { error: `Failed to upload file. Error: ${error}` });
     }
 }
 
 export const deleteFileHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-    return {
-        statusCode: 200,
-        body: JSON.stringify({ message: "Please implement deleteFileHandler" })
+    let userId = getCurrentUserId(event);
+    if (userId === undefined) {
+        return buildResponse(event, 400, { error: "Invalid request body. Cannot retrieve an authorized user." });
+    }
+
+    let fileId: string | undefined = event.pathParameters?.fileId;
+    if (fileId === null || fileId === undefined) {
+        return buildResponse(event, 400, { error: "Invalid request body. Cannot delete file." });
+    }
+
+    let fileService = new FileService();
+    try {
+        await fileService.deleteFile(fileId, userId);
+        return buildResponse(event, 200, { message: "File deleted successfully." });
+    } catch (error) {
+        console.error(error);
+        return buildResponse(event, 500, { error: `Failed to delete file. Error: ${error}` });
     }
 }

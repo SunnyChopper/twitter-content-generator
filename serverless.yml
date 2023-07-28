@@ -5,17 +5,21 @@ provider:
   region: us-east-1
   runtime: nodejs18.x
   environment:
-    OPENAI_API_KEY: ${env:OPENAI_API_KEY}
-    DB_HOST:
-      'Fn::ImportValue': DB_HOST
-    DB_PORT:
-      'Fn::ImportValue': DB_PORT
-    DB_NAME:
-      'Fn::ImportValue': DB_NAME
-    DB_USERNAME:
-      'Fn::ImportValue': DB_USERNAME
-    DB_PASSWORD:
-      'Fn::ImportValue': DB_PASSWORD
+    REACT_APP_OPENAI_API_KEY: ${env:REACT_APP_OPENAI_API_KEY}
+    REACT_APP_USER_POOL_REGION: ${env:REACT_APP_USER_POOL_REGION}
+    REACT_APP_USER_POOL_ID: ${env:REACT_APP_USER_POOL_ID}
+    REACT_APP_USER_POOL_CLIENT_ID: ${env:REACT_APP_USER_POOL_CLIENT_ID}
+    REACT_APP_ALLOWED_ORIGINS: ${env:REACT_APP_ALLOWED_ORIGINS}
+    REACT_APP_DB_HOST:
+      'Fn::ImportValue': REACT_APP_DB_HOST
+    REACT_APP_DB_PORT:
+      'Fn::ImportValue': REACT_APP_DB_PORT
+    REACT_APP_DB_NAME:
+      'Fn::ImportValue': REACT_APP_DB_NAME
+    REACT_APP_DB_USERNAME:
+      'Fn::ImportValue': REACT_APP_DB_USERNAME
+    REACT_APP_DB_PASSWORD:
+      'Fn::ImportValue': REACT_APP_DB_PASSWORD
 
 layers:
   shared:
@@ -45,10 +49,19 @@ functions:
       - http:
           path: /api/files
           method: get
+          cors:
+            origin:
+              - 'http://localhost:3000'
+            allowCredentials: true
+            methods: 'ANY'
+            headers: '*'
           authorizer:
             type: COGNITO_USER_POOLS
             authorizerId:
               Ref: ApiGatewayAuthorizer
+            claims:
+              - email
+              - sub
 
   uploadFile:
     handler: src/handlers/FileHandler.uploadFileHandler
@@ -58,11 +71,20 @@ functions:
       - http:
           path: /api/files
           method: post
+          cors:
+            origin:
+              - 'http://localhost:3000'
+            allowCredentials: true
+            methods: 'ANY'
+            headers: '*'
           authorizer:
             type: COGNITO_USER_POOLS
             authorizerId:
               Ref: ApiGatewayAuthorizer
-
+            claims:
+              - email
+              - sub
+              
   deleteFile:
     handler: src/handlers/FileHandler.deleteFileHandler
     layers:
@@ -71,10 +93,19 @@ functions:
       - http:
           path: /api/files
           method: delete
+          cors:
+            origin:
+              - 'http://localhost:3000'
+            allowCredentials: true
+            methods: 'ANY'
+            headers: '*'
           authorizer:
             type: COGNITO_USER_POOLS
             authorizerId:
               Ref: ApiGatewayAuthorizer
+            claims:
+              - email
+              - sub
 
   # --- Insights --- #
 
@@ -84,10 +115,19 @@ functions:
       - http:
           path: /api/insights
           method: get
+          cors:
+            origin:
+              - 'http://localhost:3000'
+            allowCredentials: true
+            methods: 'ANY'
+            headers: '*'
           authorizer:
             type: COGNITO_USER_POOLS
             authorizerId:
               Ref: ApiGatewayAuthorizer
+            claims:
+              - email
+              - sub
     layers:
       - !Ref SharedLambdaLayer
 
@@ -97,10 +137,19 @@ functions:
       - http:
           path: /api/insights/dashboard
           method: get
+          cors:
+            origin:
+              - 'http://localhost:3000'
+            allowCredentials: true
+            methods: 'ANY'
+            headers: '*'
           authorizer:
             type: COGNITO_USER_POOLS
             authorizerId:
               Ref: ApiGatewayAuthorizer
+            claims:
+              - email
+              - sub
     layers:
       - !Ref SharedLambdaLayer
   
@@ -112,10 +161,19 @@ functions:
       - http:
           path: /api/insights/{fileId}
           method: get
+          cors:
+            origin:
+              - 'http://localhost:3000'
+            allowCredentials: true
+            methods: 'ANY'
+            headers: '*'
           authorizer:
             type: COGNITO_USER_POOLS
             authorizerId:
               Ref: ApiGatewayAuthorizer
+            claims:
+              - email
+              - sub
 
   # --- Content Generation --- #
 
@@ -127,10 +185,19 @@ functions:
       - http:
           path: /api/content/generate
           method: get
+          cors:
+            origin:
+              - 'http://localhost:3000'
+            allowCredentials: true
+            methods: 'ANY'
+            headers: '*'
           authorizer:
             type: COGNITO_USER_POOLS
             authorizerId:
               Ref: ApiGatewayAuthorizer
+            claims:
+              - email
+              - sub
 
   generateReplies:
     handler: src/handlers/ContentGenerationHandler.generateRepliesHandler
@@ -140,10 +207,19 @@ functions:
       - http:
           path: /api/content/generate/replies
           method: post
+          cors:
+            origin:
+              - 'http://localhost:3000'
+            allowCredentials: true
+            methods: 'ANY'
+            headers: '*'
           authorizer:
             type: COGNITO_USER_POOLS
             authorizerId:
               Ref: ApiGatewayAuthorizer
+            claims:
+              - email
+              - sub
     
   generateTweets:
     handler: src/handlers/ContentGenerationHandler.generateTweetsHandler
@@ -153,10 +229,19 @@ functions:
       - http:
           path: /api/content/generate/tweets
           method: post
+          cors:
+            origin:
+              - 'http://localhost:3000'
+            allowCredentials: true
+            methods: 'ANY'
+            headers: '*'
           authorizer:
             type: COGNITO_USER_POOLS
             authorizerId:
               Ref: ApiGatewayAuthorizer
+            claims:
+              - email
+              - sub
 
   generateLongFormThreads:
     handler: src/handlers/ContentGenerationHandler.generateLongFormThreadsHandler
@@ -166,10 +251,19 @@ functions:
       - http:
           path: /api/content/generate/threads
           method: post
+          cors:
+            origin:
+              - 'http://localhost:3000'
+            allowCredentials: true
+            methods: 'ANY'
+            headers: '*'
           authorizer:
             type: COGNITO_USER_POOLS
             authorizerId:
               Ref: ApiGatewayAuthorizer
+            claims:
+              - email
+              - sub
 
   generateImageVideoIdeas:
     handler: src/handlers/ContentGenerationHandler.generateImageVideoIdeasHandler
@@ -179,10 +273,19 @@ functions:
       - http:
           path: /api/content/generate/image-video
           method: post
+          cors:
+            origin:
+              - 'http://localhost:3000'
+            allowCredentials: true
+            methods: 'ANY'
+            headers: '*'
           authorizer:
             type: COGNITO_USER_POOLS
             authorizerId:
               Ref: ApiGatewayAuthorizer
+            claims:
+              - email
+              - sub
   
   # --- Feedback --- #
 
@@ -194,10 +297,19 @@ functions:
       - http:
           path: /api/feedback/content/generate
           method: post
+          cors:
+            origin:
+              - 'http://localhost:3000'
+            allowCredentials: true
+            methods: 'ANY'
+            headers: '*'
           authorizer:
             type: COGNITO_USER_POOLS
             authorizerId:
               Ref: ApiGatewayAuthorizer
+            claims:
+              - email
+              - sub
 
   generateNewContentFromFeedback:
     handler: src/handlers/FeedbackHandler.generateNewContentFromFeedbackHandler
@@ -207,10 +319,19 @@ functions:
       - http:
           path: /api/feedback/content/regenerate
           method: post
+          cors:
+            origin:
+              - 'http://localhost:3000'
+            allowCredentials: true
+            methods: 'ANY'
+            headers: '*'
           authorizer:
             type: COGNITO_USER_POOLS
             authorizerId:
               Ref: ApiGatewayAuthorizer
+            claims:
+              - email
+              - sub
 
   getFeedback:
     handler: src/handlers/FeedbackHandler.getFeedbackHandler
@@ -220,10 +341,19 @@ functions:
       - http:
           path: /api/feedback
           method: get
+          cors:
+            origin:
+              - 'http://localhost:3000'
+            allowCredentials: true
+            methods: 'ANY'
+            headers: '*'
           authorizer:
             type: COGNITO_USER_POOLS
             authorizerId:
               Ref: ApiGatewayAuthorizer
+            claims:
+              - email
+              - sub
 
   submitFeedback:
     handler: src/handlers/FeedbackHandler.submitFeedbackHandler
@@ -233,10 +363,19 @@ functions:
       - http:
           path: /api/feedback
           method: post
+          cors:
+            origin:
+              - 'http://localhost:3000'
+            allowCredentials: true
+            methods: 'ANY'
+            headers: '*'
           authorizer:
             type: COGNITO_USER_POOLS
             authorizerId:
               Ref: ApiGatewayAuthorizer
+            claims:
+              - email
+              - sub
 
   updateFeedback:
     handler: src/handlers/FeedbackHandler.updateFeedbackHandler
@@ -246,10 +385,19 @@ functions:
       - http:
           path: /api/feedback
           method: patch
+          cors:
+            origin:
+              - 'http://localhost:3000'
+            allowCredentials: true
+            methods: 'ANY'
+            headers: '*'
           authorizer:
             type: COGNITO_USER_POOLS
             authorizerId:
               Ref: ApiGatewayAuthorizer
+            claims:
+              - email
+              - sub
 
   deleteFeedback:
     handler: src/handlers/FeedbackHandler.deleteFeedbackHandler
@@ -259,10 +407,19 @@ functions:
       - http:
           path: /api/feedback
           method: delete
+          cors:
+            origin:
+              - 'http://localhost:3000'
+            allowCredentials: true
+            methods: 'ANY'
+            headers: '*'
           authorizer:
             type: COGNITO_USER_POOLS
             authorizerId:
               Ref: ApiGatewayAuthorizer
+            claims:
+              - email
+              - sub
 
   # --- Avatars --- #
 
@@ -273,11 +430,20 @@ functions:
     events:
       - http:
           path: /api/avatars
-          method: get 
+          method: get
+          cors:
+            origin:
+              - 'http://localhost:3000'
+            allowCredentials: true
+            methods: 'ANY'
+            headers: '*'
           authorizer:
             type: COGNITO_USER_POOLS
             authorizerId:
               Ref: ApiGatewayAuthorizer
+            claims:
+              - email
+              - sub
 
   createAvatar:
     handler: src/handlers/AvatarHandler.createAvatarHandler
@@ -287,10 +453,19 @@ functions:
       - http:
           path: /api/avatars
           method: post
+          cors:
+            origin:
+              - 'http://localhost:3000'
+            allowCredentials: true
+            methods: 'ANY'
+            headers: '*'
           authorizer:
             type: COGNITO_USER_POOLS
             authorizerId:
               Ref: ApiGatewayAuthorizer
+            claims:
+              - email
+              - sub
 
   updateAvatar:
     handler: src/handlers/AvatarHandler.updateAvatarHandler
@@ -300,10 +475,19 @@ functions:
       - http:
           path: /api/avatars
           method: patch
+          cors:
+            origin:
+              - 'http://localhost:3000'
+            allowCredentials: true
+            methods: 'ANY'
+            headers: '*'
           authorizer:
             type: COGNITO_USER_POOLS
             authorizerId:
               Ref: ApiGatewayAuthorizer
+            claims:
+              - email
+              - sub
 
   deleteAvatar:
     handler: src/handlers/AvatarHandler.deleteAvatarHandler
@@ -313,11 +497,20 @@ functions:
       - http:
           path: /api/avatars
           method: delete
+          cors:
+            origin:
+              - 'http://localhost:3000'
+            allowCredentials: true
+            methods: 'ANY'
+            headers: '*'
           authorizer:
             type: COGNITO_USER_POOLS
             authorizerId:
               Ref: ApiGatewayAuthorizer
-      
+            claims:
+              - email
+              - sub
+
 resources:
   Resources:
     CognitoUserPool:
@@ -343,10 +536,68 @@ resources:
         GenerateSecret: False
         UserPoolId:
           Ref: CognitoUserPool
+    CognitoIdentityPool:
+      Type: AWS::Cognito::IdentityPool
+      Properties:
+        IdentityPoolName: twitter-content-gen-identitypool
+        AllowUnauthenticatedIdentities: false
+        CognitoIdentityProviders:
+          - ClientId:
+              Ref: CognitoUserPoolClient
+            ProviderName:
+              Fn::GetAtt:
+                - CognitoUserPool
+                - ProviderName
+    CognitoIdentityPoolRoles:
+      Type: AWS::Cognito::IdentityPoolRoleAttachment
+      Properties:
+        IdentityPoolId:
+          Ref: CognitoIdentityPool
+        Roles:
+          authenticated:
+            Fn::GetAtt:
+              - CognitoAuthRole
+              - Arn
+    CognitoAuthRole:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Principal:
+                Federated: cognito-identity.amazonaws.com
+              Action:
+                - sts:AssumeRoleWithWebIdentity
+              Condition:
+                StringEquals:
+                  "cognito-identity.amazonaws.com:aud":
+                    Ref: CognitoIdentityPool
+                ForAnyValue:StringLike:
+                  "cognito-identity.amazonaws.com:amr": authenticated
+        Policies:
+          - PolicyName: CognitoAuthorizedPolicy
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - s3:ListBucket
+                    - s3:GetObject
+                    - s3:PutObject
+                    - s3:DeleteObject
+                  Resource:
+                    Fn::Sub: arn:aws:s3:::twitter-csv-files-bucket/*
     FileBucket:
       Type: AWS::S3::Bucket
       Properties:
         BucketName: twitter-csv-files-bucket
+        CorsConfiguration:
+          CorsRules:
+            - AllowedHeaders: ["*"]
+              AllowedMethods: ["GET", "PUT", "POST", "DELETE"]
+              AllowedOrigins: ["*"]
+              MaxAge: 3000
     UserDataTable:
       Type: AWS::RDS::DBInstance
       Properties:
@@ -412,9 +663,12 @@ useDotenv: true
 custom:
   dotenv:
     include:
-      - DB_HOST
-      - DB_PORT
-      - DB_NAME
-      - DB_USERNAME
-      - DB_PASSWORD
-      - OPENAI_API_KEY
+      - REACT_APP_DB_HOST
+      - REACT_APP_DB_PORT
+      - REACT_APP_DB_NAME
+      - REACT_APP_DB_USERNAME
+      - REACT_APP_DB_PASSWORD
+      - REACT_APP_OPENAI_API_KEY
+      - REACT_APP_USER_POOL_REGION
+      - REACT_APP_USER_POOL_ID
+      - REACT_APP_USER_POOL_CLIENT_ID

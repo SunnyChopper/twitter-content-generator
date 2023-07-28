@@ -28,11 +28,14 @@
     "module": "commonjs",
     "noEmit": true,
     "jsx": "react-jsx",
-    "baseUrl": "./",
+    "baseUrl": ".",
     "paths": {
       "/opt/services/*": ["src/nodejs/node_modules/services/*"],
       "/services/*": ["src/nodejs/node_modules/services/*"],
       "/contracts/*": ["src/contracts/*"],
+      "@entity/*": ["src/entity/*"],
+      "/handlers/*": ["src/handlers/*"],
+      "@utils/*": ["src/utils/*"]
     }
   },
   "include": [

@@ -15,9 +15,18 @@ import LoginPage from "./components/5 - pages/LoginPage";
 import { setToken } from "./authSlice";
 
 Amplify.configure({
-	region: 'us-east-1',
-	userPoolId: 'us-east-1_3gSSU4ERq',
-	userPoolWebClientId: '56iajbie5m6fvd2sl5qb2rbfqa'
+	Auth: {
+		identityPoolId: process.env.REACT_APP_IDENTITY_POOL_ID || '',
+		region: process.env.REACT_APP_USER_POOL_REGION || '',
+		userPoolId: process.env.REACT_APP_USER_POOL_ID || '',
+		userPoolWebClientId: process.env.REACT_APP_USER_POOL_CLIENT_ID || '',
+	},
+	Storage: {
+		AWSS3: {
+			bucket: process.env.REACT_APP_S3_BUCKET_NAME || '',
+			region: process.env.REACT_APP_S3_BUCKET_REGION || '',
+		}
+	}
 });
 
 const App = () => {

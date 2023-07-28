@@ -1,7 +1,11 @@
-import React, { useCallback } from 'react';
+// System
 import { useDropzone } from 'react-dropzone';
-import { styled } from '@mui/material/styles';
+import React, { useCallback } from 'react';
+import { Storage } from 'aws-amplify';
+
+// Material UI
 import { Button, Typography } from '@mui/material';
+import { styled } from '@mui/material/styles';
 
 const DropzoneContainer = styled('div')({
     display: 'flex',
@@ -23,7 +27,7 @@ const DropzoneContainer = styled('div')({
 });
 
 interface FileUploadProps {
-    setFileUrl: (url: string) => void;
+    setFileToUpload(file: File): void;
     setUploadEnabled: (enabled: boolean) => void;
 }
 
@@ -32,8 +36,9 @@ const FileUpload: React.FC<FileUploadProps> = (props) => {
     const [error, setError] = React.useState('');
 
     const onDrop = useCallback(async (acceptedFiles: File[]) => {
-        const file = acceptedFiles[0];
+        const file: File = acceptedFiles[0];
         setFileName(file.name);
+
         props.setUploadEnabled(false);
         setError('');
 
@@ -57,10 +62,9 @@ const FileUpload: React.FC<FileUploadProps> = (props) => {
                 setError('Invalid Twitter data file. Please double check that the file contains the official Twitter data headers.');
                 return;
             }
-
+            
+            props.setFileToUpload(file);
             props.setUploadEnabled(true);
-            // const url = await uploadFile(file);
-            // setFileUrl(url);
         };
         reader.readAsText(file);
     }, [props]);
@@ -76,10 +80,7 @@ const FileUpload: React.FC<FileUploadProps> = (props) => {
             }
             {fileName && <Typography>Selected file: {fileName}</Typography>}
             {error && <Typography color="error">{error}</Typography>}
-            <Button variant="contained" component="label">
-                Select File
-                <input type="file" hidden {...getInputProps()} />
-            </Button>
+            <input type="file" hidden {...getInputProps()} />
         </DropzoneContainer>
     );
 }
