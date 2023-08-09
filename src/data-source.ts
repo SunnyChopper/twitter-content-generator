@@ -11,10 +11,10 @@ import { TwitterFile } from "src/entity/TwitterFile";
 // }
 
 const DB_PORT = parseInt(process.env.REACT_APP_DB_PORT || "3306");
-const DB_HOST = process.env.REACT_APP_DB_HOST || "localhost";
-const DB_NAME = process.env.REACT_APP_DB_NAME || "test";
-const DB_USERNAME = process.env.REACT_APP_DB_USERNAME || "test";
-const DB_PASSWORD = process.env.REACT_APP_DB_PASSWORD || "test";
+const DB_HOST = process.env.REACT_APP_DB_HOST;
+const DB_NAME = process.env.REACT_APP_DB_NAME;
+const DB_USERNAME = process.env.REACT_APP_DB_USERNAME;
+const DB_PASSWORD = process.env.REACT_APP_DB_PASSWORD;
 
 export const AppDataSource = new DataSource({
     type: "mysql",

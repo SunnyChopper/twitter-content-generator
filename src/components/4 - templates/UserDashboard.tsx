@@ -33,6 +33,7 @@ const UserDashboard: React.FC<UserDashboardProps> = (props) => {
             </Grid>
             <Grid item xs={12} sx={styles.uploadedFilesTableContainer}>
                 <UploadedFilesTable
+                    showTitle
                     actionType='Display'
                     handleClickCreateAvatar={() => { console.log('clicked create avatar') }}
                     handleClickDelete={() => { console.log('clicked delete') }}

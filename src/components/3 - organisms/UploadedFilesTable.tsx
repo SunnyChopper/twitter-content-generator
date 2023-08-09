@@ -22,11 +22,14 @@ import FileUpload from './FileUpload';
 // Entities
 import { TwitterFile } from 'src/entity/TwitterFile';
 
+// API
+import { getFilesForCurrentUser, createFileForCurrentUser, deleteFileForCurrentUser } from 'src/api/files';
+
 // Helpers
-import { uploadFileForCurrentUser, createFileForCurrentUser, getFilesForCurrentUser, deleteFileForCurrentUser } from 'src/utils/files';
+import { uploadFileForCurrentUser } from 'src/utils/files';
 
 interface UploadedFilesTableProps {
-    actionType: 'CRUD' | 'LLM' | 'Display';
+    actionType: 'CRUD' | 'LLM' | 'Display' | 'Avatar';
     handleClickEdit: (id: string) => void;
     handleClickDelete: (id: string) => void;
     handleClickGenerate: (id: string) => void;
@@ -40,6 +43,17 @@ const styles: { [key: string]: React.CSSProperties } = {
     headerContainer: {
         display: 'flex',
         alignItems: 'center'
+    },
+    modalContainer: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+    },
+    modalContent: {
+        width: 'auto',
+        height: 'auto',
+        backgroundColor: 'white',
+        padding: '20px'
     },
     uploadButton: {
         marginLeft: '10px'
@@ -76,8 +90,8 @@ const FileUploadModal: React.FC<FileUploadModalProps> = (props) => {
     }
 
     return (
-        <Modal open={props.open} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Grid container spacing={2} sx={{ width: '500px', height: '500px', backgroundColor: 'white', padding: '20px' }}>
+        <Modal open={props.open} sx={styles.modalContainer}>
+            <Grid container spacing={2} sx={styles.modalContent}>
                 <Grid item xs={12}>
                     <Typography variant="h5">Upload CSV</Typography>
                 </Grid>
@@ -200,8 +214,10 @@ const UploadedFilesTable: React.FC<UploadedFilesTableProps> = (props) => {
             );
         } else if (props.actionType === 'LLM') {
             return <Button variant="contained" color="primary" size="small" disabled={props.disableButtons} onClick={() => { props.handleClickGenerate(id) }}>Select File</Button>;
-        } else {
+        } else if (props.actionType === 'Avatar') {
             return <Button variant="contained" color="primary" size="small" disabled={props.disableButtons}>Create Avatar</Button>;
+        } else {
+            return <></>;
         }
     }
 

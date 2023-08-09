@@ -1,15 +1,18 @@
 export interface UpdateAvatarInputInterface {
-    avatarId: string;
-    tweets?: string[];
+    patterns: Patterns;
+    avatar: StyleToneVoice;
+    themesAndTopics: ThemesAndTopics;
 }
 
 export class UpdateAvatarInput implements UpdateAvatarInputInterface {
-    avatarId: string;
-    tweets?: string[];
+    patterns: Patterns;
+    avatar: StyleToneVoice;
+    themesAndTopics: ThemesAndTopics;
 
-    constructor(avatarId: string, tweets?: string[]) {
-        this.avatarId = avatarId;
-        this.tweets = tweets;
+    constructor(patterns: Patterns, avatar: StyleToneVoice, themesAndTopics: ThemesAndTopics) {
+        this.patterns = patterns;
+        this.avatar = avatar;
+        this.themesAndTopics = themesAndTopics;
     }
 }
 

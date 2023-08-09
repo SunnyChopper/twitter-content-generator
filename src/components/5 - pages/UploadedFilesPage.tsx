@@ -5,7 +5,7 @@ import Grid from '@mui/material/Grid';
 import Header from '../4 - templates/Header';
 import UploadedFilesTable from '../3 - organisms/UploadedFilesTable';
 
-import { getFilesForCurrentUser } from 'src/utils/files';
+import { getFilesForCurrentUser } from 'src/api/files';
 
 interface UploadedFilesPageProps { }
 

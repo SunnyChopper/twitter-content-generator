@@ -12,13 +12,16 @@ import CardActionArea from '@mui/material/CardActionArea';
 import CardHeader from '@mui/material/CardHeader';
 import Avatar from '@mui/material/Avatar';
 
+import { Avatar as AvatarEntity } from 'src/entity/Avatar';
+
 interface AvatarCardProps {
-    onClickCard: (id: string) => void;
+    avatar: AvatarEntity;
+    onClickCard?: (id: string) => void;
 }
 
 const AvatarCard: React.FC<AvatarCardProps> = (props) => {
     return (
-        <Card onClick={() => { props.onClickCard('1') }}>
+        <Card onClick={() => { if (props.onClickCard) { props.onClickCard('1') }}}>
             <CardActionArea>
                 <CardMedia
                     component="img"
@@ -33,12 +36,12 @@ const AvatarCard: React.FC<AvatarCardProps> = (props) => {
                                 avatar={
                                     <Avatar sx={{ bgcolor: 'red' }}>A</Avatar>
                                 }
-                                title="Avatar Name"
-                                subheader="Avatar Subheader"
+                                title={props.avatar.name}
+                                subheader={props.avatar.createdAt.toLocaleDateString()}
                             />
                         </Grid>
                         <Grid item xs={12}>
-                            <Typography variant="body1">Avatar Description</Typography>
+                            <Typography variant="body1">{props.avatar.description}</Typography>
                         </Grid>
                     </Grid>
                 </CardContent>

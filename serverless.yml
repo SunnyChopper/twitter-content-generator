@@ -10,16 +10,20 @@ provider:
     REACT_APP_USER_POOL_ID: ${env:REACT_APP_USER_POOL_ID}
     REACT_APP_USER_POOL_CLIENT_ID: ${env:REACT_APP_USER_POOL_CLIENT_ID}
     REACT_APP_ALLOWED_ORIGINS: ${env:REACT_APP_ALLOWED_ORIGINS}
+    REACT_APP_S3_BUCKET_NAME:
+      'Fn::ImportValue': S3_BUCKET_NAME
+    REACT_APP_S3_BUCKET_REGION:
+      'Fn::ImportValue': S3_BUCKET_REGION
     REACT_APP_DB_HOST:
-      'Fn::ImportValue': REACT_APP_DB_HOST
+      'Fn::ImportValue': DB_HOST
     REACT_APP_DB_PORT:
-      'Fn::ImportValue': REACT_APP_DB_PORT
+      'Fn::ImportValue': DB_PORT
     REACT_APP_DB_NAME:
-      'Fn::ImportValue': REACT_APP_DB_NAME
+      'Fn::ImportValue': DB_NAME
     REACT_APP_DB_USERNAME:
-      'Fn::ImportValue': REACT_APP_DB_USERNAME
+      'Fn::ImportValue': DB_USERNAME
     REACT_APP_DB_PASSWORD:
-      'Fn::ImportValue': REACT_APP_DB_PASSWORD
+      'Fn::ImportValue': DB_PASSWORD
 
 layers:
   shared:
@@ -658,6 +662,14 @@ outputs:
     Value: admin123
     Export:
       Name: DB_PASSWORD
+  S3_BUCKET_NAME:
+    Value: twitter-csv-files-bucket
+    Export:
+      Name: S3_BUCKET_NAME
+  S3_BUCKET_REGION:
+    Value: !Ref AWS::Region
+    Export:
+      Name: S3_BUCKET_REGION
 
 useDotenv: true
 custom:
@@ -672,3 +684,6 @@ custom:
       - REACT_APP_USER_POOL_REGION
       - REACT_APP_USER_POOL_ID
       - REACT_APP_USER_POOL_CLIENT_ID
+      - REACT_APP_ALLOWED_ORIGINS
+      - REACT_APP_S3_BUCKET_NAME
+      - REACT_APP_S3_BUCKET_REGION
