@@ -15,7 +15,18 @@ import { buildResponse } from 'src/utils/responses';
 // Path: /api/avatars; Method: GET
 export const getAvatarsHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     // TODO: Add app logic here to retrieve the avatars from the database
-    return buildResponse(event, 200, { message: "Please implement getAvatarsHandler" })
+    const userId: string | undefined = getCurrentUserId(event);
+    if (userId === undefined) {
+        return buildResponse(event, 400, { error: "Invalid request body. Cannot determine current user." });
+    }
+
+    let avatarService: AvatarService = new AvatarService();
+    const avatars = await avatarService.getAvatars(userId);
+    if (avatars === null) {
+        return buildResponse(event, 500, { error: "Failed to retrieve avatars." });
+    }
+
+    return buildResponse(event, 200, avatars);
 }
 
 // Path: /api/avatars; Method: POST
@@ -29,12 +40,12 @@ export const createAvatarHandler = async (event: APIGatewayProxyEvent): Promise<
         return buildResponse(event, 400, { error: "Invalid request body. Cannot determine current user." });
     }
 
-    let incompleteRequest = JSON.parse(event.body) as { fileKeys: string[] };
+    let incompleteRequest = JSON.parse(event.body) as { fileKey: string };
 
     let request: GenerateAvatarInput;
     try {
         request = {
-            fileKeys: incompleteRequest.fileKeys,
+            fileKey: incompleteRequest.fileKey,
             userId: currentUserId
         }
     } catch (error) {
@@ -42,16 +53,20 @@ export const createAvatarHandler = async (event: APIGatewayProxyEvent): Promise<
     }
 
     let avatarService: AvatarService = new AvatarService();
-    let avatar: GenerateAvatarOutput;
+    let avatar: GenerateAvatarOutput | null;
     try {
-        avatar = await avatarService.generateAvatar(request) as GenerateAvatarOutput;
+        avatar = await avatarService.generateAvatar(request);
     } catch (error) {
         console.log(error);
         return buildResponse(event, 500, { error: `Failed to create avatar. Error: ${error}` });
     }
 
+    if (avatar === null) {
+        return buildResponse(event, 500, { error: "Failed to create avatar. Error: avatar is null." });
+    }
+
     try {
-        await avatarService.saveAvatar(currentUserId, avatar);
+        await avatarService.saveAvatar(currentUserId, incompleteRequest.fileKey, avatar);
     } catch (error) {
         console.log(error);
         return buildResponse(event, 500, { error: `Failed to save avatar. Error: ${error}` });

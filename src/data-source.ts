@@ -1,14 +1,16 @@
 import "reflect-metadata";
 import { DataSource } from "typeorm";
 
-// TODO: Update the entities array with your own entities
+// Entities
+import { GeneratedContent } from "src/entity/GeneratedContent";
 import { TwitterFile } from "src/entity/TwitterFile";
+import { Avatar } from "src/entity/Avatar";
 
 // Get environment variables for database connection
 // Load from .env file if running locally
-// if (process.env.NODE_ENV !== "production") {
-//     require("dotenv").config();
-// }
+if (process.env.NODE_ENV !== "production") {
+    require("dotenv").config();
+}
 
 const DB_PORT = parseInt(process.env.REACT_APP_DB_PORT || "3306");
 const DB_HOST = process.env.REACT_APP_DB_HOST;
@@ -23,9 +25,13 @@ export const AppDataSource = new DataSource({
     username: DB_USERNAME,
     password: DB_PASSWORD,
     database: DB_NAME,
-    synchronize: false,
+    synchronize: true,
     logging: true,
-    entities: [TwitterFile],
+    entities: [
+        GeneratedContent,
+        TwitterFile,
+        Avatar
+    ],
     migrations: [],
     subscribers: [],
 });

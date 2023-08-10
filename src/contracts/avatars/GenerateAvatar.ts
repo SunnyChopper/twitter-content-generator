@@ -1,20 +1,19 @@
 export interface GenerateAvatarInputInterface {
-    fileKeys: string[];
-    tweets?: string[];
+    userId?: string;
+    fileKey: string;
 }
 
 export class GenerateAvatarInput implements GenerateAvatarInputInterface {
     userId?: string;
-    fileKeys: string[];
+    fileKey: string;
 
-    constructor(fileKeys: string[]) {
-        this.fileKeys = fileKeys;
+    constructor(fileKey: string) {
+        this.fileKey = fileKey;
     }
 }
 
 export interface GenerateAvatarOutputInterface {
     patterns: Patterns;
-    avatar: StyleToneVoice;
     themesAndTopics: ThemesAndTopics;
 }
 
@@ -72,12 +71,10 @@ export interface ThemesAndTopics {
 
 export class GenerateAvatarOutput implements GenerateAvatarOutputInterface {
     patterns: Patterns;
-    avatar: StyleToneVoice;
     themesAndTopics: ThemesAndTopics;
 
-    constructor(patterns: Patterns, avatar: StyleToneVoice, themesAndTopics: ThemesAndTopics) {
+    constructor(patterns: Patterns, themesAndTopics: ThemesAndTopics) {
         this.patterns = patterns;
-        this.avatar = avatar;
         this.themesAndTopics = themesAndTopics;
     }
 }

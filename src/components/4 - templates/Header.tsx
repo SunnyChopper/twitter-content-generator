@@ -61,7 +61,7 @@ const Header = () => {
                 Menu
             </Typography>
             <List component="nav">
-                {['Dashboard', 'Avatars', 'Generate', 'Files', 'Logout'].map((text, index) => {
+                {['Dashboard', 'Avatars', 'Content', 'Generate', 'Files', 'Logout'].map((text, index) => {
                     if (text === 'Logout') {
                         return (
                             <ListItem key={index} onClick={handleLogout} sx={styles.logoutButton}>

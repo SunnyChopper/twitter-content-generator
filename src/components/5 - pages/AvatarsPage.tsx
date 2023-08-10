@@ -5,10 +5,13 @@ import Grid from '@mui/material/Grid';
 import AvatarCards from '../4 - templates/AvatarCards';
 import Header from '../4 - templates/Header';
 
+
+
 interface AvatarsPageProps { }
 
 const AvatarsPage: React.FC<AvatarsPageProps> = (props) => {
     const [selectedAvatar, setSelectedAvatar] = React.useState<string>('');
+    
 
     const handleCardClick = (id: string) => { setSelectedAvatar(id); }
 

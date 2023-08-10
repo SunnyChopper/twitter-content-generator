@@ -3,7 +3,7 @@ service: twitter-content-generator
 provider:
   name: aws
   region: us-east-1
-  runtime: nodejs18.x
+  runtime: nodejs16.x
   environment:
     REACT_APP_OPENAI_API_KEY: ${env:REACT_APP_OPENAI_API_KEY}
     REACT_APP_USER_POOL_REGION: ${env:REACT_APP_USER_POOL_REGION}
@@ -11,19 +11,19 @@ provider:
     REACT_APP_USER_POOL_CLIENT_ID: ${env:REACT_APP_USER_POOL_CLIENT_ID}
     REACT_APP_ALLOWED_ORIGINS: ${env:REACT_APP_ALLOWED_ORIGINS}
     REACT_APP_S3_BUCKET_NAME:
-      'Fn::ImportValue': S3_BUCKET_NAME
+      'Fn::ImportValue': REACT_APP_S3_BUCKET_NAME
     REACT_APP_S3_BUCKET_REGION:
-      'Fn::ImportValue': S3_BUCKET_REGION
+      'Fn::ImportValue': REACT_APP_S3_BUCKET_REGION
     REACT_APP_DB_HOST:
-      'Fn::ImportValue': DB_HOST
+      'Fn::ImportValue': REACT_APP_DB_HOST
     REACT_APP_DB_PORT:
-      'Fn::ImportValue': DB_PORT
+      'Fn::ImportValue': REACT_APP_DB_PORT
     REACT_APP_DB_NAME:
-      'Fn::ImportValue': DB_NAME
+      'Fn::ImportValue': REACT_APP_DB_NAME
     REACT_APP_DB_USERNAME:
-      'Fn::ImportValue': DB_USERNAME
+      'Fn::ImportValue': REACT_APP_DB_USERNAME
     REACT_APP_DB_PASSWORD:
-      'Fn::ImportValue': DB_PASSWORD
+      'Fn::ImportValue': REACT_APP_DB_PASSWORD
 
 layers:
   shared:
@@ -31,7 +31,7 @@ layers:
     name: twitter-content-gen-shared
     description: Shared services layer for Twitter Content Generator
     compatibleRuntimes:
-      - nodejs18.x
+      - nodejs16.x
     retain: false
 
 plugins:
@@ -40,7 +40,156 @@ plugins:
 
 package:
   individually: true
-  
+
+resources:
+  Resources:
+    CognitoUserPool:
+      Type: AWS::Cognito::UserPool
+      Properties:
+        UserPoolName: twitter-content-gen-userpool
+        MfaConfiguration: OFF
+        UsernameAttributes:
+          - email
+        AutoVerifiedAttributes:
+          - email
+        Policies:
+          PasswordPolicy:
+            MinimumLength: 8
+            RequireUppercase: True
+            RequireLowercase: True
+            RequireNumbers: True
+            RequireSymbols: False
+    CognitoUserPoolClient:
+      Type: AWS::Cognito::UserPoolClient
+      Properties:
+        ClientName: twitter-content-gen-userpool-client
+        GenerateSecret: False
+        UserPoolId:
+          Ref: CognitoUserPool
+    CognitoIdentityPool:
+      Type: AWS::Cognito::IdentityPool
+      Properties:
+        IdentityPoolName: twitter-content-gen-identitypool
+        AllowUnauthenticatedIdentities: false
+        CognitoIdentityProviders:
+          - ClientId:
+              Ref: CognitoUserPoolClient
+            ProviderName:
+              Fn::GetAtt:
+                - CognitoUserPool
+                - ProviderName
+    CognitoIdentityPoolRoles:
+      Type: AWS::Cognito::IdentityPoolRoleAttachment
+      Properties:
+        IdentityPoolId:
+          Ref: CognitoIdentityPool
+        Roles:
+          authenticated:
+            Fn::GetAtt:
+              - CognitoAuthRole
+              - Arn
+    CognitoAuthRole:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Principal:
+                Federated: cognito-identity.amazonaws.com
+              Action:
+                - sts:AssumeRoleWithWebIdentity
+              Condition:
+                StringEquals:
+                  "cognito-identity.amazonaws.com:aud":
+                    Ref: CognitoIdentityPool
+                ForAnyValue:StringLike:
+                  "cognito-identity.amazonaws.com:amr": authenticated
+        Policies:
+          - PolicyName: CognitoAuthorizedPolicy
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - s3:ListBucket
+                    - s3:GetObject
+                    - s3:PutObject
+                    - s3:DeleteObject
+                  Resource:
+                    - Fn::Sub: arn:aws:s3:::twitter-csv-files-bucket/*
+                    - Fn::Sub: arn:aws:s3:::twitter-csv-files-bucket
+    FileBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: twitter-csv-files-bucket
+        CorsConfiguration:
+          CorsRules:
+            - AllowedHeaders: ["*"]
+              AllowedMethods: ["GET", "PUT", "POST", "DELETE"]
+              AllowedOrigins: ["*"]
+              MaxAge: 3000
+    LambdaExecutionRole:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service: lambda.amazonaws.com
+              Action:
+                - sts:AssumeRole
+        Policies:
+          - PolicyName: LambdaS3AccessPolicy
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - s3:ListBucket
+                    - s3:GetObject
+                    - s3:PutObject
+                    - s3:DeleteObject
+                  Resource:
+                    - Fn::Sub: arn:aws:s3:::twitter-csv-files-bucket/*
+                    - Fn::Sub: arn:aws:s3:::twitter-csv-files-bucket
+          - PolicyName: LambdaCloudWatchAccessPolicy
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - logs:CreateLogGroup
+                    - logs:CreateLogStream
+                    - logs:PutLogEvents
+                  Resource: "arn:aws:logs:*:*:*"
+    UserDataTable:
+      Type: AWS::RDS::DBInstance
+      Properties:
+        DBName: twitter_content_gen
+        AllocatedStorage: 20
+        DBInstanceClass: db.t3.micro
+        Engine: MySQL
+        EngineVersion: "5.7"
+        MasterUsername: admin         # replace later
+        MasterUserPassword: admin123  # replace later
+        PubliclyAccessible: true
+        StorageType: gp2
+        MultiAZ: false
+    ApiGatewayAuthorizer:
+      Type: AWS::ApiGateway::Authorizer
+      Properties:
+        Name: twitter-content-gen-authorizermethod.request.header.Authorization
+        IdentitySource: 
+        RestApiId:
+          Ref: ApiGatewayRestApi
+        Type: COGNITO_USER_POOLS
+        ProviderARNs:
+          - Fn::GetAtt:
+              - CognitoUserPool
+              - Arn
+
 functions:
 
   # --- File Management --- #
@@ -451,6 +600,8 @@ functions:
 
   createAvatar:
     handler: src/handlers/AvatarHandler.createAvatarHandler
+    timeout: 180 # 3 minutes
+    role: LambdaExecutionRole
     layers:
       - !Ref SharedLambdaLayer
     events:
@@ -461,7 +612,7 @@ functions:
             origin:
               - 'http://localhost:3000'
             allowCredentials: true
-            methods: 'ANY'
+            methods: 'POST'
             headers: '*'
           authorizer:
             type: COGNITO_USER_POOLS
@@ -515,118 +666,6 @@ functions:
               - email
               - sub
 
-resources:
-  Resources:
-    CognitoUserPool:
-      Type: AWS::Cognito::UserPool
-      Properties:
-        UserPoolName: twitter-content-gen-userpool
-        MfaConfiguration: OFF
-        UsernameAttributes:
-          - email
-        AutoVerifiedAttributes:
-          - email
-        Policies:
-          PasswordPolicy:
-            MinimumLength: 8
-            RequireUppercase: True
-            RequireLowercase: True
-            RequireNumbers: True
-            RequireSymbols: False
-    CognitoUserPoolClient:
-      Type: AWS::Cognito::UserPoolClient
-      Properties:
-        ClientName: twitter-content-gen-userpool-client
-        GenerateSecret: False
-        UserPoolId:
-          Ref: CognitoUserPool
-    CognitoIdentityPool:
-      Type: AWS::Cognito::IdentityPool
-      Properties:
-        IdentityPoolName: twitter-content-gen-identitypool
-        AllowUnauthenticatedIdentities: false
-        CognitoIdentityProviders:
-          - ClientId:
-              Ref: CognitoUserPoolClient
-            ProviderName:
-              Fn::GetAtt:
-                - CognitoUserPool
-                - ProviderName
-    CognitoIdentityPoolRoles:
-      Type: AWS::Cognito::IdentityPoolRoleAttachment
-      Properties:
-        IdentityPoolId:
-          Ref: CognitoIdentityPool
-        Roles:
-          authenticated:
-            Fn::GetAtt:
-              - CognitoAuthRole
-              - Arn
-    CognitoAuthRole:
-      Type: AWS::IAM::Role
-      Properties:
-        AssumeRolePolicyDocument:
-          Version: "2012-10-17"
-          Statement:
-            - Effect: Allow
-              Principal:
-                Federated: cognito-identity.amazonaws.com
-              Action:
-                - sts:AssumeRoleWithWebIdentity
-              Condition:
-                StringEquals:
-                  "cognito-identity.amazonaws.com:aud":
-                    Ref: CognitoIdentityPool
-                ForAnyValue:StringLike:
-                  "cognito-identity.amazonaws.com:amr": authenticated
-        Policies:
-          - PolicyName: CognitoAuthorizedPolicy
-            PolicyDocument:
-              Version: "2012-10-17"
-              Statement:
-                - Effect: Allow
-                  Action:
-                    - s3:ListBucket
-                    - s3:GetObject
-                    - s3:PutObject
-                    - s3:DeleteObject
-                  Resource:
-                    Fn::Sub: arn:aws:s3:::twitter-csv-files-bucket/*
-    FileBucket:
-      Type: AWS::S3::Bucket
-      Properties:
-        BucketName: twitter-csv-files-bucket
-        CorsConfiguration:
-          CorsRules:
-            - AllowedHeaders: ["*"]
-              AllowedMethods: ["GET", "PUT", "POST", "DELETE"]
-              AllowedOrigins: ["*"]
-              MaxAge: 3000
-    UserDataTable:
-      Type: AWS::RDS::DBInstance
-      Properties:
-        DBName: twitter_content_gen
-        AllocatedStorage: 20
-        DBInstanceClass: db.t3.micro
-        Engine: MySQL
-        EngineVersion: "5.7"
-        MasterUsername: admin         # replace later
-        MasterUserPassword: admin123  # replace later
-        PubliclyAccessible: true
-        StorageType: gp2
-        MultiAZ: false
-    ApiGatewayAuthorizer:
-      Type: AWS::ApiGateway::Authorizer
-      Properties:
-        Name: twitter-content-gen-authorizermethod.request.header.Authorization
-        IdentitySource: 
-        RestApiId:
-          Ref: ApiGatewayRestApi
-        Type: COGNITO_USER_POOLS
-        ProviderARNs:
-          - Fn::GetAtt:
-              - CognitoUserPool
-              - Arn
 
 outputs:
   SHARED_LAYER_ARN:

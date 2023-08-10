@@ -15,14 +15,11 @@ export class Avatar {
     @Column('text', { nullable: true })
     public description: string;
 
-    @Column('array', { nullable: true })
-    public fileIds: string[];
+    @Column('varchar', { length: 255, nullable: true })
+    public fileIds: string;
 
     @Column('json', { nullable: true })
     public patterns: Patterns;
-
-    @Column('json', { nullable: true })
-    public avatar: StyleToneVoice;
 
     @Column('json', { nullable: true })
     public themesAndTopics: ThemesAndTopics;

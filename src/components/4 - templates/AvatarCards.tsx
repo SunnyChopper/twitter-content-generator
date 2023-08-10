@@ -15,7 +15,7 @@ import { TwitterFile } from 'src/entity/TwitterFile';
 import { Avatar } from 'src/entity/Avatar';
 
 // API
-import { generateAvatarForCurrentUser } from 'src/api/avatars';
+import { generateAvatarForCurrentUser, getAvatarsForCurrentUser } from 'src/api/avatars';
 import { getFilesForCurrentUser } from 'src/api/files';
 
 // Components
@@ -75,7 +75,7 @@ const AddAvatarModal: React.FC<AddAvatarModalProps> = (props) => {
         // TODO: Add call to the API to generate the avatar
         console.log("🚀 ~ file: AvatarCards.tsx:73 ~ handleGenerate ~ selectedFileKey:", selectedFileKey);
         setModalState('generatingAvatar');
-        const avatar: Avatar = await generateAvatarForCurrentUser([selectedFileKey]);
+        const avatar: Avatar = await generateAvatarForCurrentUser(selectedFileKey);
         console.log("🚀 ~ file: AvatarCards.tsx:75 ~ handleGenerate ~ avatar", avatar);
         setGeneratedAvatar(avatar);
         setModalState('selectFile');
@@ -138,8 +138,23 @@ interface AvatarCardsProps {
 }
 
 const AvatarCards: React.FC<AvatarCardsProps> = (props) => {
+    const [hasMounted, setHasMounted] = React.useState<boolean>(false);
     const [addAvatarModalOpen, setAddAvatarModalOpen] = React.useState<boolean>(false);
     const [savedAvatars, setSavedAvatars] = React.useState<Avatar[]>([]);
+    const [isLoading, setIsLoading] = React.useState<boolean>(false);
+
+    React.useEffect(() => {
+        setIsLoading(true);
+        getAvatarsForCurrentUser().then((avatars) => {
+            console.log("🚀 ~ file: AvatarCards.tsx:148 ~ getAvatarsForCurrentUser ~ avatars:", avatars);
+            setSavedAvatars(avatars);
+        }).catch((err) => {
+            console.log(err);
+        }).finally(() => {
+            setIsLoading(false);
+        });
+        setHasMounted(true);
+    }, []);
     
     const handleAddAvatarModalOpen = () => { setAddAvatarModalOpen(true); }
     const handleAddAvatarModalClose = () => { setAddAvatarModalOpen(false); }
@@ -151,18 +166,24 @@ const AvatarCards: React.FC<AvatarCardsProps> = (props) => {
                 <Button variant="text" color="primary" onClick={handleAddAvatarModalOpen}>+ Create New Avatar</Button>
             </Grid>
             <Grid container item xs={12} spacing={3}>
-                {savedAvatars.length === 0 && (
+                {isLoading && (
+                    <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'center', padding: '48px' }}>
+                        <CircularProgress />
+                    </Grid>
+                )}
+                {!isLoading && hasMounted && savedAvatars.length === 0 && (
                     <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'center', backgroundColor: '#f5f5f5', padding: '48px', borderRadius: '16px' }}>
                         <Typography variant="body1">You don't have any avatars yet.</Typography>
                     </Grid>
                 )}
-                {savedAvatars.map((avatar: Avatar) => { 
+                {savedAvatars && savedAvatars.length > 0 && (savedAvatars.map((avatar: Avatar) => { 
+                    console.log("🚀 ~ file: AvatarCards.tsx:172 ~ {savedAvatars&&savedAvatars.length>0&& ~ avatar:", avatar)
                     return (
                         <Grid key={avatar.id} item xs={12} sm={6} md={4} lg={3} xl={2}>
                             <AvatarCard avatar={avatar} onClickCard={() => { props.onClickCard(avatar.id.toString()) }} />
                         </Grid>
                     )
-                })}
+                }))}
             </Grid>
             <AddAvatarModal onClose={handleAddAvatarModalClose} open={addAvatarModalOpen} />
         </Grid>

@@ -1,4 +1,5 @@
 import React from 'react';
+import moment from 'moment';
 
 // Component: AvatarCard
 // Returns: A card with an avatar and a name, which the user can click to see more information.
@@ -36,8 +37,9 @@ const AvatarCard: React.FC<AvatarCardProps> = (props) => {
                                 avatar={
                                     <Avatar sx={{ bgcolor: 'red' }}>A</Avatar>
                                 }
-                                title={props.avatar.name}
-                                subheader={props.avatar.createdAt.toLocaleDateString()}
+                                title={`Avatar ${props.avatar.id}`}
+                                subheader={moment(props.avatar.createdAt).format('MMM Do, YYYY [at] h:mm a')}
+                                sx={{ padding: '0px', flexDirection: 'row', alignItems: 'flex-start',  }}
                             />
                         </Grid>
                         <Grid item xs={12}>

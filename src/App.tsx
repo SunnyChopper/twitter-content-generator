@@ -5,6 +5,7 @@ import { Auth, Amplify } from "aws-amplify";
 
 import CircularProgress from "@mui/material/CircularProgress";
 
+import PastGeneratedContentPage from "./components/5 - pages/PastGeneratedContentPage";
 import GenerateContentPage from "./components/5 - pages/GenerateContentPage";
 import UploadedFilesPage from "./components/5 - pages/UploadedFilesPage";
 import UserDashboardPage from "./components/5 - pages/UserDashboardPage";
@@ -68,6 +69,7 @@ const App = () => {
 					<>
 						<Route path="/dashboard" element={<UserDashboardPage />} />
 						<Route path="/generate" element={<GenerateContentPage />} />
+						<Route path="/content" element={<PastGeneratedContentPage />} />
 						<Route path="/avatars" element={<AvatarsPage />} />
 						<Route path="/files" element={<UploadedFilesPage />} />
 					</>
